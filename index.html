@@ -273,16 +273,16 @@
             <div id="tab-filter" class="tab-pane">
                 <div class="form-group">
                     <label class="form-label">Cari Nama Lokasi</label>
-                    <input type="text" id="search-input" class="form-input" placeholder="Ketik nama toko, fasilitas, dll...">
+                    <input type="text" id="search-input" class="form-input" placeholder="Ketik nama toko, fasilitas, dll..." oninput="applyFilters()">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Kategori Utama</label>
                     <div class="checkbox-group">
-                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="shop" checked> Toko / Shop (Warna Hijau)</label>
-                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="amenity" checked> Fasilitas / Amenity (Warna Biru)</label>
-                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="building" checked> Bangunan (Warna Oranye)</label>
-                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="other" checked> Lainnya (Warna Ungu)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="shop" onchange="applyFilters()" checked> Toko / Shop (Warna Hijau)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="amenity" onchange="applyFilters()" checked> Fasilitas / Amenity (Warna Biru)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="building" onchange="applyFilters()" checked> Bangunan (Warna Oranye)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="other" onchange="applyFilters()" checked> Lainnya (Warna Ungu)</label>
                     </div>
                 </div>
                 
@@ -356,10 +356,14 @@
     Chart.defaults.color = '#94a3b8';
     Chart.defaults.font.family = "'Outfit', sans-serif";
 
+    function isValidProp(val) {
+        return val && val !== 'null' && val !== 'undefined';
+    }
+
     function getCategoryInfo(p) {
-        if(p.shop) return { id: 'shop', color: '#22c55e', icon: 'fa-store', name: 'Toko / Shop' };
-        if(p.amenity) return { id: 'amenity', color: '#3b82f6', icon: 'fa-building', name: 'Fasilitas' };
-        if(p.building) return { id: 'building', color: '#f97316', icon: 'fa-home', name: 'Bangunan' };
+        if(isValidProp(p.shop)) return { id: 'shop', color: '#22c55e', icon: 'fa-store', name: 'Toko / Shop' };
+        if(isValidProp(p.amenity)) return { id: 'amenity', color: '#3b82f6', icon: 'fa-building', name: 'Fasilitas' };
+        if(isValidProp(p.building)) return { id: 'building', color: '#f97316', icon: 'fa-home', name: 'Bangunan' };
         return { id: 'other', color: '#8b5cf6', icon: 'fa-map-marker-alt', name: 'Lainnya' };
     }
 
@@ -489,8 +493,12 @@
             stats[info.id]++;
             
             // Subtypes
-            const type = p.shop || p.amenity || p.building || 'Lainnya';
-            if(type !== 'yes') { // ignore generic 'yes'
+            let type = 'Lainnya';
+            if(isValidProp(p.shop)) type = p.shop;
+            else if(isValidProp(p.amenity)) type = p.amenity;
+            else if(isValidProp(p.building)) type = p.building;
+
+            if(type !== 'yes' && type !== 'Lainnya') { // ignore generic 'yes'
                 subTypes[type] = (subTypes[type] || 0) + 1;
             }
         });
