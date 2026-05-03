@@ -280,8 +280,8 @@
                     <label class="form-label">Kategori Utama</label>
                     <div class="checkbox-group">
                         <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="shop" onchange="applyFilters()" checked> Toko / Shop (Warna Hijau)</label>
-                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="amenity" onchange="applyFilters()" checked> Fasilitas / Amenity (Warna Biru)</label>
-                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="building" onchange="applyFilters()" checked> Bangunan (Warna Oranye)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="landuse" onchange="applyFilters()" checked> Penggunaan Lahan (Warna Oranye)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="leisure" onchange="applyFilters()" checked> Tempat Hiburan / Rekreasi (Warna Biru)</label>
                         <label class="checkbox-label"><input type="checkbox" class="cat-filter" value="other" onchange="applyFilters()" checked> Lainnya (Warna Ungu)</label>
                     </div>
                 </div>
@@ -362,14 +362,14 @@
 
     function getCategoryInfo(p) {
         if(isValidProp(p.shop)) return { id: 'shop', color: '#22c55e', icon: 'fa-store', name: 'Toko / Shop' };
-        if(isValidProp(p.amenity)) return { id: 'amenity', color: '#3b82f6', icon: 'fa-building', name: 'Fasilitas' };
-        if(isValidProp(p.building)) return { id: 'building', color: '#f97316', icon: 'fa-home', name: 'Bangunan' };
+        if(isValidProp(p.landuse)) return { id: 'landuse', color: '#f97316', icon: 'fa-layer-group', name: 'Penggunaan Lahan' };
+        if(isValidProp(p.leisure)) return { id: 'leisure', color: '#3b82f6', icon: 'fa-tree', name: 'Tempat Hiburan' };
         return { id: 'other', color: '#8b5cf6', icon: 'fa-map-marker-alt', name: 'Lainnya' };
     }
 
     function createPopup(p) {
         const info = getCategoryInfo(p);
-        const title = p.name || p.shop || p.amenity || 'Lokasi Tanpa Nama';
+        const title = p.name || p.shop || p.landuse || p.leisure || 'Lokasi Tanpa Nama';
         let html = `
             <div class="popup-header">
                 <div class="popup-icon" style="background: linear-gradient(135deg, ${info.color}, #0f172a)"><i class="fas ${info.icon}"></i></div>
@@ -380,7 +380,7 @@
         const attrs = [
             { k: 'Tipe OSM', v: p.osm_type }, { k: 'ID OSM', v: p.osm_id },
             { k: 'Jam Buka', v: p.opening_hours }, { k: 'Kategori Shop', v: p.shop },
-            { k: 'Amenity', v: p.amenity }, { k: 'Alamat', v: p.addr_street ? (p.addr_street + ' ' + (p.addr_housenumber||'')) : null }
+            { k: 'Landuse', v: p.landuse }, { k: 'Leisure', v: p.leisure }
         ];
         let hasData = false;
         attrs.forEach(a => {
@@ -440,8 +440,9 @@
             if(search) {
                 const name = (p.name || '').toLowerCase();
                 const shop = (p.shop || '').toLowerCase();
-                const amenity = (p.amenity || '').toLowerCase();
-                if(!name.includes(search) && !shop.includes(search) && !amenity.includes(search)) return false;
+                const landuse = (p.landuse || '').toLowerCase();
+                const leisure = (p.leisure || '').toLowerCase();
+                if(!name.includes(search) && !shop.includes(search) && !landuse.includes(search) && !leisure.includes(search)) return false;
             }
             return true;
         });
@@ -466,7 +467,7 @@
             },
             onEachFeature: function (feature, layer) {
                 layer.bindPopup(createPopup(feature.properties), { closeButton: true });
-                const tip = feature.properties.name || feature.properties.shop || feature.properties.amenity || 'Lokasi';
+                const tip = feature.properties.name || feature.properties.shop || feature.properties.landuse || feature.properties.leisure || 'Lokasi';
                 layer.bindTooltip(tip, { direction: 'top', className: 'custom-tooltip' });
             }
         });
@@ -484,7 +485,7 @@
 
     // Chart Updates
     function updateCharts() {
-        let stats = { shop: 0, amenity: 0, building: 0, other: 0 };
+        let stats = { shop: 0, landuse: 0, leisure: 0, other: 0 };
         let subTypes = {};
 
         filteredData.forEach(f => {
@@ -495,8 +496,8 @@
             // Subtypes
             let type = 'Lainnya';
             if(isValidProp(p.shop)) type = p.shop;
-            else if(isValidProp(p.amenity)) type = p.amenity;
-            else if(isValidProp(p.building)) type = p.building;
+            else if(isValidProp(p.landuse)) type = p.landuse;
+            else if(isValidProp(p.leisure)) type = p.leisure;
 
             if(type !== 'yes' && type !== 'Lainnya') { // ignore generic 'yes'
                 subTypes[type] = (subTypes[type] || 0) + 1;
@@ -509,10 +510,10 @@
         catChartInstance = new Chart(ctxCat, {
             type: 'doughnut',
             data: {
-                labels: ['Toko', 'Fasilitas', 'Bangunan', 'Lainnya'],
+                labels: ['Toko', 'Lahan', 'Rekreasi', 'Lainnya'],
                 datasets: [{
-                    data: [stats.shop, stats.amenity, stats.building, stats.other],
-                    backgroundColor: ['#22c55e', '#3b82f6', '#f97316', '#8b5cf6'],
+                    data: [stats.shop, stats.landuse, stats.leisure, stats.other],
+                    backgroundColor: ['#22c55e', '#f97316', '#3b82f6', '#8b5cf6'],
                     borderWidth: 0, hoverOffset: 4
                 }]
             },
